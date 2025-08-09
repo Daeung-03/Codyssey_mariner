@@ -29,10 +29,11 @@ def loading():
         header = "parts, mean_strength"
         # savetxt: 구조화 배열은 2차원 배열 아닌 경우 field값을 자리에 맞게 적어야 함
         np.savetxt('parts_to_work_on.csv', filtered, 
-               fmt='%s,%.3f', delimiter=',', header=header, comments='')
+                fmt='%s,%.3f', delimiter=',', header=header, comments='')
         print("저장 완료!")
-    except Exception as e:
-        print(f"파일 저장 중 오류 발생: {e}")
+    except Exception:
+        raise Exception("저장 실패")
+
 
 def bonus():
     dtype_parts = [('parts', 'U50'), ('strength', 'f8')]
@@ -52,8 +53,13 @@ def bonus():
     print(parts3)
 
 def main():
-    loading()
-    bonus()
+    try:
+        loading()
+        bonus()
+    except FileNotFoundError:
+        print("파일 로딩 실패")
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == '__main__':
     main()
