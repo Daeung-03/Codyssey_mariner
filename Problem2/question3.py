@@ -18,7 +18,6 @@ def loading():
         avg_list.append((name, mean_strength))
 
     avg_arr = np.array(avg_list, dtype=[('parts', 'U50'), ('mean_strength', 'f8')])
-    print("평균 예시:", avg_arr[:3])
 
     filtered = avg_arr[avg_arr['mean_strength'] < 50]
     for part, mean_strength in filtered:

@@ -5,7 +5,7 @@ MAX_INT = sys.maxsize
 
 
 def sphere_area(diameter, material, thickness=1):
-    check_valid(diameter, material)
+    check_valid(diameter, material, thickness)
     name = {'gls': '유리', 'alu': '알루미늄', 'cars': '탄소강'}
     density = {'gls': 2.4, 'alu': 2.7, 'cars': 7.85}
     global area
@@ -19,7 +19,7 @@ def sphere_area(diameter, material, thickness=1):
     )
 
 
-def check_valid(diameter, material):
+def check_valid(diameter, material, thickness):
     if material.lower() not in ['gls', 'alu', 'cars']:
         raise ValueError('You must choose from given values')
 
@@ -28,6 +28,9 @@ def check_valid(diameter, material):
 
     if diameter > MAX_INT:
         raise ValueError(f'limit of diameter is {MAX_INT}')
+    
+    if thickness != 1:
+        raise ValueError("thickness is not 1")
 
 
 def main():
