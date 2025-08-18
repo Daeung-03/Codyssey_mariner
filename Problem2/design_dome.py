@@ -1,8 +1,8 @@
 import math
 import sys
+import numpy as np
 
 MAX_INT = sys.maxsize
-
 
 def sphere_area(diameter, material, thickness=1):
     check_valid(diameter, material, thickness)
@@ -10,7 +10,7 @@ def sphere_area(diameter, material, thickness=1):
     density = {'gls': 2.4, 'alu': 2.7, 'cars': 7.85}
     global area
     area = 3 * math.pi * ((diameter / 2) ** 2)
-    volume = (4 / 3) * math.pi * (((diameter * 100) / 2) ** 3)
+    volume = (2 / 3) * math.pi * (((diameter * 100) / 2) ** 3)
     global weightness
     weightness = (volume * density[material.lower()] * 0.38) / 1000
 
@@ -20,14 +20,17 @@ def sphere_area(diameter, material, thickness=1):
 
 
 def check_valid(diameter, material, thickness):
+    global area
+    area = 123
     if material.lower() not in ['gls', 'alu', 'cars']:
         raise ValueError('You must choose from given values')
 
     if diameter <= 0:
         raise ValueError("Diameter can't be negative and zero")
-
-    if diameter > MAX_INT:
+    elif diameter > MAX_INT:
         raise ValueError(f'limit of diameter is {MAX_INT}')
+    elif np.isnan(diameter):
+        raise ValueError("Diameter can't be nan")
     
     if thickness != 1:
         raise ValueError("thickness is not 1")
@@ -49,7 +52,7 @@ def main():
             sphere_area(float(diameter), material)
 
         except ValueError as ve:
-            print(f'Invalid diameter: {ve}')
+            print(f'Invalid input: {ve}')
         except Exception as e:
             print(f'Error: {e}')
 
