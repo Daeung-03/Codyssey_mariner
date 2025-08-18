@@ -200,47 +200,23 @@ def main():
         ds.set_env()
         print(ds.get_env())
 
-        stop_event = threading.Event()
+        # stop_event = threading.Event()
 
-        runComputer = MissionComputer()
-        thread1 = threading.Thread(target=runComputer.get_mission_computer_info, args=(stop_event,), daemon=True)
-        thread2 = threading.Thread(target=runComputer.get_mission_computer_load, args=(stop_event,), daemon=True)
-        thread3 = threading.Thread(target=runComputer.get_sensor_data, args=(stop_event,))
-
-        input_thread = threading.Thread(target=input_listener, args=(stop_event,), daemon=True)
-        input_thread.start()
-
-        print("\n미션 컴퓨터 시스템 정보:")
-        thread1.start()
-        print("\n미션 컴퓨터 실시간 부하:")
-        thread2.start()
-        print("MissionComputer 시작 (5초 간격으로 데이터 출력):")
-        thread3.start()
-        thread3.join()
-
-        try:
-            while not stop_event.is_set():
-                time.sleep(0.1)  # CPU 사용률을 낮추기 위한 짧은 대기
-        except KeyboardInterrupt:
-            print("\n강제 종료 신호를 받았습니다. 모든 프로세스를 종료합니다...")
-            stop_event.set()
-
-        # stop_event = multiprocessing.Event()
-
-        # runComputer1 = MissionComputer()
-        # runComputer2 = MissionComputer()
-        # runComputer3 = MissionComputer()
-
-        # p1 = multiprocessing.Process(target=runComputer1.get_mission_computer_info, args=(stop_event,))
-        # p2 = multiprocessing.Process(target=runComputer2.get_mission_computer_load, args=(stop_event,))
-        # p3 = multiprocessing.Process(target=runComputer3.get_sensor_data, args=(stop_event,))
+        # runComputer = MissionComputer()
+        # thread1 = threading.Thread(target=runComputer.get_mission_computer_info, args=(stop_event,), daemon=True)
+        # thread2 = threading.Thread(target=runComputer.get_mission_computer_load, args=(stop_event,), daemon=True)
+        # thread3 = threading.Thread(target=runComputer.get_sensor_data, args=(stop_event,))
 
         # input_thread = threading.Thread(target=input_listener, args=(stop_event,), daemon=True)
         # input_thread.start()
 
-        # p1.start()
-        # p2.start()
-        # p3.start()
+        # print("\n미션 컴퓨터 시스템 정보:")
+        # thread1.start()
+        # print("\n미션 컴퓨터 실시간 부하:")
+        # thread2.start()
+        # print("MissionComputer 시작 (5초 간격으로 데이터 출력):")
+        # thread3.start()
+        # thread3.join()
 
         # try:
         #     while not stop_event.is_set():
@@ -249,10 +225,34 @@ def main():
         #     print("\n강제 종료 신호를 받았습니다. 모든 프로세스를 종료합니다...")
         #     stop_event.set()
 
-        # # 모든 프로세스가 종료될 때까지 대기
-        # p1.join()
-        # p2.join()
-        # p3.join()
+        stop_event = multiprocessing.Event()
+
+        runComputer1 = MissionComputer()
+        runComputer2 = MissionComputer()
+        runComputer3 = MissionComputer()
+
+        p1 = multiprocessing.Process(target=runComputer1.get_mission_computer_info, args=(stop_event,))
+        p2 = multiprocessing.Process(target=runComputer2.get_mission_computer_load, args=(stop_event,))
+        p3 = multiprocessing.Process(target=runComputer3.get_sensor_data, args=(stop_event,))
+
+        input_thread = threading.Thread(target=input_listener, args=(stop_event,), daemon=True)
+        input_thread.start()
+
+        p1.start()
+        p2.start()
+        p3.start()
+
+        try:
+            while not stop_event.is_set():
+                time.sleep(0.1)  # CPU 사용률을 낮추기 위한 짧은 대기
+        except KeyboardInterrupt:
+            print("\n강제 종료 신호를 받았습니다. 모든 프로세스를 종료합니다...")
+            stop_event.set()
+
+        # 모든 프로세스가 종료될 때까지 대기
+        p1.join()
+        p2.join()
+        p3.join()
 
     except ValueError as ve:
         print(f'{ve}')
