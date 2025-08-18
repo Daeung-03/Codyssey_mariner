@@ -38,9 +38,9 @@ def main():
     try:
         loading()
     except FileNotFoundError:
-        print("파일을 찾을 수 없습니다!")
+        print('파일을 찾을 수 없습니다!')
     except Exception as e:
-        print(f"Error: {e}")
+        print(f'Error: {e}')
 
 
 if __name__ == '__main__':

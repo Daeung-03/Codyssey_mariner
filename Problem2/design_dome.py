@@ -4,6 +4,7 @@ import numpy as np
 
 MAX_INT = sys.maxsize
 
+
 def sphere_area(diameter, material, thickness=1):
     check_valid(diameter, material, thickness)
     name = {'gls': '유리', 'alu': '알루미늄', 'cars': '탄소강'}
@@ -31,9 +32,9 @@ def check_valid(diameter, material, thickness):
         raise ValueError(f'limit of diameter is {MAX_INT}')
     elif np.isnan(diameter):
         raise ValueError("Diameter can't be nan")
-    
+
     if thickness != 1:
-        raise ValueError("thickness is not 1")
+        raise ValueError('thickness is not 1')
 
 
 def main():
