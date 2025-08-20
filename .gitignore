@@ -1,3 +1,4 @@
 *.toml
 .venv
 *.txt
+!password.txt
