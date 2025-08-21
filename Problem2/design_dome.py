@@ -3,15 +3,21 @@ import sys
 import numpy as np
 
 MAX_INT = sys.maxsize
-
+PI = math.pi
 
 def sphere_area(diameter, material, thickness=1):
     check_valid(diameter, material, thickness)
     name = {'gls': '유리', 'alu': '알루미늄', 'cars': '탄소강'}
     density = {'gls': 2.4, 'alu': 2.7, 'cars': 7.85}
+    r = diameter/2
+    r_cm = r * 100
+    outer_r = r_cm
+    inner_r = r_cm - thickness
     global area
-    area = 3 * math.pi * ((diameter / 2) ** 2)
-    volume = (2 / 3) * math.pi * (((diameter * 100) / 2) ** 3)
+    # 외부 구 표면 + 내부 구 표면 + 밑면(큰 거에서 작은 거 뺌)
+    area = (2 * PI * (outer_r**2)) + (2 * PI * (inner_r**2)) + (PI * ((outer_r**2) - (inner_r**2)))
+    # 큰 반 구에서 작은 거 빼면 유리의 부피!
+    volume = (2/3) * PI * ((outer_r**3) - (inner_r**3))
     global weightness
     weightness = (volume * density[material.lower()] * 0.38) / 1000
 
