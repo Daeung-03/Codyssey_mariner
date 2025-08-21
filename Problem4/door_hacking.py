@@ -2,8 +2,8 @@ import zipfile
 import itertools
 import string
 import time
+from datetime import datetime
 import multiprocessing as mp
-from functools import partial
 
 zip_file_path = "emergency_storage_key.zip"    
     
@@ -11,64 +11,80 @@ def test_password(zip_path, password):
     try:
         with zipfile.ZipFile(zip_path, 'r') as zip_file:
             # 첫 번째 파일만 테스트해서 속도 향상
-            name = zip_file.namelist()[0]
-            zip_file.testzip()
-            zip_file.open(name, pwd=password.encode('utf-8')).read(1)
+                name = zip_file.namelist()[0]
+                with zip_file.open(name, pwd=password.encode('utf-8')) as file:
+                    file.read(1)
         return True
+    
+    except IndexError:
+        raise Exception("ZIP 파일이 비어 있습니다.")
+    
+    except FileNotFoundError:
+        raise("파일을 찾을 수 없습니다.")
+    
     except:
         return False
 
 
-def test_password_batch(zip_path, password_list):
-    """
-    패스워드 리스트를 배치로 테스트
-    """
+def test_password_batch(args):
+    zip_path, password_list = args
     for password in password_list:
         if test_password(zip_path, password):
             return password
+        
     return None
     
-def unlock_zip(zip_path, batch_size=80000, num_processes=6):
+def unlock_zip(zip_path, batch_size=15000, num_processes=6):
     charset = string.ascii_lowercase + string.digits
     
     # 패스워드 생성기를 배치로 나누기
     password_generator = (''.join(p) for p in itertools.product(charset, repeat=6))
     start_time = time.time()
-    print(f"시작시간: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
+    print(f"시작시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S KST')}")
     tested = 0
+    try:
+        with mp.Pool(processes=num_processes) as pool:
+            while True:
+                batch = list(itertools.islice(password_generator, batch_size * num_processes))
+                if not batch:
+                    break
+                    
+                tasks = [(zip_path, batch)]
+                    
+                results = pool.map(test_password_batch, tasks)
+                
+                # 결과 확인
+                for result in results:
+                    if result:
+                        return result
+                    
+                elapsed = time.time() - start_time
+                tested += num_processes
+                
+                print(f"경과시간: {elapsed}, 반복횟수: {tested}")
 
-    with mp.Pool(processes=num_processes) as pool:
-        while True:
-            # 배치 크기만큼 패스워드 생성
-            bulk = list(itertools.islice(password_generator, batch_size * num_processes))
-            if not bulk:
-                break
-                
-            sub_batches = [bulk[(i*batch_size):(i+1)*batch_size] for i in range(num_processes)]
-                
-            worker = partial(test_password_batch, zip_path)
-            results = pool.map(worker, sub_batches)
-            tested += 6
-            
-            # 결과 확인
-            for result in results:
-                if result:
-                    return result
-                
-            elapsed = time.time() - start_time
-            print(f"경과시간: {elapsed}, 반복횟수: {tested}")
-
+        print("패스워드를 찾지 못했습니다.")
+        return None
+    except mp.ProcessError:
+        raise Exception("멀티 프로세싱 오류") # 프로세스 생성/관리 오류
     
-    print("패스워드를 찾지 못했습니다.")
-    return None
+    except KeyboardInterrupt:
+        pool.terminate()
+        pool.join()
+        raise Exception("강제 종료")
+        
 
 def main():
-    found = unlock_zip(zip_file_path)
+    try:
+        found = unlock_zip(zip_file_path)
 
-    with open('passward.txt', 'w', encoding='utf-8') as f:
-        f.write(found)
+        with open('passward.txt', 'w', encoding='utf-8') as f:
+            f.write(found)
 
-    print(found)
-
+        print(found)
+    except Exception as e:
+        print(f'에러 발생: {e}')
+        exit()
+    
 if __name__ == '__main__':
     main()
