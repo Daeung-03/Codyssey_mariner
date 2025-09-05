@@ -3,12 +3,13 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel
 from PyQt5.QtCore import Qt
 import math
 
+
 class Calculator:
     def __init__(self):
         self.expression = []
-        self.current_num = ""
+        self.current_num = ''
         self.just_calculated = False
-        
+
         self.function_map = {
             'sin': self.calculate_sin,
             'cos': self.calculate_cos,
@@ -17,12 +18,12 @@ class Calculator:
             'cosh': self.calculate_cosh,
             'tanh': self.calculate_tanh,
             'square': self.calculate_square,
-            'cube': self.calculate_cube
+            'cube': self.calculate_cube,
         }
 
     def clear(self):
         self.expression = []
-        self.current_num = ""
+        self.current_num = ''
         self.just_calculated = False
 
     def add_number(self, number):
@@ -34,23 +35,23 @@ class Calculator:
     def add_decimal(self):
         if '.' not in self.current_num:
             if not self.current_num:
-                self.current_num = "0."
+                self.current_num = '0.'
             else:
-                self.current_num += "."
+                self.current_num += '.'
 
     def commit_current_num(self):
         if self.current_num:
             self.expression.append(self.current_num)
-            self.current_num = ""
+            self.current_num = ''
 
     def add_operator(self, operator):
         if self.just_calculated:
             self.expression = []
             self.just_calculated = False
-        
+
         self.commit_current_num()
 
-        if self.expression and self.expression[-1] in "+-x÷":
+        if self.expression and self.expression[-1] in '+-x÷':
             self.expression[-1] = operator
         else:
             self.expression.append(operator)
@@ -59,28 +60,30 @@ class Calculator:
         if self.just_calculated:
             self.expression = []
             self.just_calculated = False
-        
+
         if self.current_num:
-            func_expr = f"{func_name}({self.current_num})"
+            func_expr = f'{func_name}({self.current_num})'
             self.expression.append(func_expr)
-            self.current_num = ""
-        elif self.expression and self.is_number_or_function(self.expression[-1]):
+            self.current_num = ''
+        elif self.expression and self.is_number_or_function(
+            self.expression[-1]
+        ):
             last_val = self.expression.pop()
-            func_expr = f"{func_name}({last_val})"
+            func_expr = f'{func_name}({last_val})'
             self.expression.append(func_expr)
 
     def add_pi(self):
         if self.just_calculated:
             self.expression = []
             self.just_calculated = False
-        
+
         if self.current_num:
             self.commit_current_num()
-        
+
         self.expression.append('π')
 
     def is_number_or_function(self, token):
-        if token in "+-x÷%":
+        if token in '+-x÷%':
             return False
         try:
             float(token)
@@ -93,9 +96,9 @@ class Calculator:
         if self.just_calculated:
             self.expression = []
             self.just_calculated = False
-        
+
         self.commit_current_num()
-        if self.expression and self.expression[-1] not in "+-x÷%":
+        if self.expression and self.expression[-1] not in '+-x÷%':
             self.expression.append('%')
         self.just_calculated = False
 
@@ -127,7 +130,7 @@ class Calculator:
     def calculate_tan(self, value):
         num = float(value)
         if abs(math.cos(math.radians(num))) < 1e-10:
-            raise ValueError("정의되지 않습니다")
+            raise ValueError('정의되지 않습니다')
         result = math.tan(math.radians(num))
         return result
 
@@ -148,121 +151,180 @@ class Calculator:
 
     def calculate_square(self, value):
         num = float(value)
-        result = num ** 2
+        result = num**2
         return result
 
     def calculate_cube(self, value):
         num = float(value)
-        result = num ** 3
+        result = num**3
         return result
 
     def parse_function_call(self, func_expr):
         open_paren = func_expr.find('(')
         close_paren = func_expr.find(')')
-        
+
         if open_paren == -1 or close_paren == -1 or close_paren <= open_paren:
             return None, None
-        
+
         func_name = func_expr[:open_paren]
-        argument = func_expr[open_paren + 1:close_paren]
-        
+        argument = func_expr[open_paren + 1 : close_paren]
+
         return func_name, argument
 
     def evaluate_single_function(self, func_expr):
         func_name, argument = self.parse_function_call(func_expr)
-        
+
         if func_name is None or argument is None:
-            raise ValueError(f"잘못된 함수 형식: {func_expr}")
-        
+            raise ValueError(f'잘못된 함수 형식: {func_expr}')
+
         if func_name not in self.function_map:
-            raise ValueError(f"지원하지 않는 함수: {func_name}")
+            raise ValueError(f'지원하지 않는 함수: {func_name}')
         try:
             argument_value = float(argument)
         except ValueError:
             return
-        
+
         calculate_func = self.function_map[func_name]
         result = calculate_func(argument_value)
-        
+
         return result
 
-    def evaluate_functions_in_expression(self, expr_str):
-        result_str = expr_str
-        
+    def evaluate_functions_in_expression(self, expr):
+        result_str = expr
         result_str = result_str.replace('π', str(math.pi))
-        
-        function_names = sorted(self.function_map.keys(), key=len, reverse=True)
-        
+
+        function_names = sorted(
+            self.function_map.keys(), key=len, reverse=True
+        )
+
         for func_name in function_names:
-            pattern = f"{func_name}("
-            
+            pattern = f'{func_name}('
+
             while pattern in result_str:
                 start_idx = result_str.find(pattern)
-                
                 if start_idx == -1:
                     break
-                
-                # 단순하게 첫 번째 ')' 찾기 (중첩 없으므로)
+
                 open_paren = start_idx + len(func_name)
-                close_paren = result_str.find(')', open_paren)
-                
-                if close_paren == -1:
-                    raise ValueError(f"닫는 괄호를 찾을 수 없습니다: {func_name}")
-                
-                # 인수 추출 및 계산
-                argument = result_str[open_paren + 1:close_paren]
-                
+
+                paren_count = 1
+                close_paren = open_paren + 1
+
+                while close_paren < len(result_str) and paren_count > 0:
+                    if result_str[close_paren] == '(':
+                        paren_count += 1
+                    elif result_str[close_paren] == ')':
+                        paren_count -= 1
+                    close_paren += 1
+
+                close_paren -= 1
+
+                if paren_count != 0:
+                    raise ValueError(
+                        f'닫는 괄호를 찾을 수 없습니다: {func_name}'
+                    )
+
+                argument = result_str[open_paren + 1 : close_paren]
+
                 try:
-                    arg_value = float(argument)
-                    calc_result = self.function_map[func_name](arg_value)
-                    
-                    # 함수를 결과로 치환
-                    result_str = result_str[:start_idx] + str(calc_result) + result_str[close_paren + 1:]
-                    
-                except ValueError:
-                    raise ValueError(f"함수 인수는 숫자만 가능합니다: {argument}")
+                    # 중첩 함수나 수식 처리
+                    if '(' in argument and ')' in argument:
+                        # 중첩 함수인 경우 재귀적으로 처리
+                        argument_value = float(
+                            self.evaluate_functions_in_expression(argument)
+                        )
+                    else:
+                        # 단순 수식인 경우 eval로 계산
+                        argument_value = float(eval(argument))
+
+                    calc_result = self.function_map[func_name](argument_value)
+                    result_str = (
+                        result_str[:start_idx]
+                        + str(calc_result)
+                        + result_str[close_paren + 1 :]
+                    )
+
                 except Exception as e:
-                    raise ValueError(f"함수 계산 오류 ({func_name}({argument})): {e}")
-        
+                    raise ValueError(
+                        f'함수 계산 오류 ({func_name}({argument})): {e}'
+                    )
+
         return result_str
+
+    def change_percent(self, expr):
+        result = ''
+        i = 0
+        length = len(expr)
+
+        while i < length:
+            if expr[i] == '%':
+                # % 다음에 오는 것이 무엇인지 확인
+                if i + 1 < length:
+                    # 공백을 건너뛰고 다음 유효한 문자 찾기
+                    j = i + 1
+                    while j < length and expr[j] == ' ':
+                        j += 1
+
+                    if j < length:
+                        next_char = expr[j]
+                        # 다음 문자가 숫자면 모듈러 연산 (% 그대로 유지)
+                        if next_char.isdigit():
+                            result += '%'
+                        # 다음 문자가 연산자면 백분율 (/100으로 변환)
+                        elif next_char in '+-*/':
+                            result += '/100'
+                        else:
+                            result += '%'  # 기본값
+                    else:
+                        result += '/100'  # 마지막에 %가 오면 백분율
+                else:
+                    result += '/100'  # 마지막에 %가 오면 백분율
+            else:
+                result += expr[i]
+            i += 1
+
+        return result
 
     def calculate(self):
         self.commit_current_num()
         if not self.expression:
             return 0
 
-        expr_str = "".join(self.expression)
-        
-        expr_str = self.evaluate_functions_in_expression(expr_str)
-        
-        expr_str = expr_str.replace('x', '*').replace('÷', '/').replace('%', '/100')
+        expr = ' '.join(self.expression)
+
+        expr = self.change_percent(expr)
+
+        expr = self.evaluate_functions_in_expression(expr)
+
+        expr = expr.replace('x', '*').replace('÷', '/')
 
         try:
-            result = eval(expr_str)
-            
+            result = eval(expr)
+
             # 결과 포맷팅
             if result == int(result):
                 result_str = str(int(result))
             else:
-                result_str = f"{result:.6f}".rstrip('0')
-            
+                result_str = f'{result:.6f}'.rstrip('0').rstrip('.')
+
             self.expression = [result_str]
             self.current_num = result_str
             self.just_calculated = True
             return result
-            
+
         except Exception as e:
-            raise ValueError(f"계산 오류: {e}")
+            raise ValueError(f'계산 오류: {e}')
 
     def get_display_text(self):
         expr = self.expression.copy()
         if self.current_num:
             expr.append(self.current_num)
         if not expr:
-            return "0"
+            return '0'
 
-        display_text = " ".join(expr)
+        display_text = ' '.join(expr)
         return display_text
+
 
 class MyApp(QWidget):
     def __init__(self):
@@ -334,13 +396,13 @@ class MyApp(QWidget):
             self.calculator.clear()
             self.is_error = False
             self.update_display()
-            
+
         elif function == '+/-':
             if self.is_error:
                 return
             self.calculator.negative_positive()
             self.update_display()
-            
+
         elif function == '%':
             if self.is_error:
                 return
@@ -349,28 +411,28 @@ class MyApp(QWidget):
                 self.update_display()
             except Exception as e:
                 self.handle_error(str(e))
-                
+
         elif function in ['sin', 'cos', 'tan', 'sinh', 'cosh', 'tanh']:
             try:
                 self.calculator.add_function(function)
                 self.update_display()
             except Exception as e:
                 self.handle_error(str(e))
-                
+
         elif function == 'x²':
             try:
                 self.calculator.add_function('square')
                 self.update_display()
             except Exception as e:
                 self.handle_error(str(e))
-                
+
         elif function == 'x³':
             try:
                 self.calculator.add_function('cube')
                 self.update_display()
             except Exception as e:
                 self.handle_error(str(e))
-                
+
         elif function == 'π':
             try:
                 self.calculator.add_pi()
@@ -388,7 +450,7 @@ class MyApp(QWidget):
         btn_width = self.btn_size * width + self.btn_space * (width - 1)
         btn = QPushButton(text, self)
         btn.setGeometry(x, y, btn_width, self.btn_size)
-        
+
         # 스타일 설정
         if button_type == 'number':
             style = """
@@ -432,9 +494,9 @@ class MyApp(QWidget):
                 background-color: #575763;
             }
             """
-        
+
         btn.setStyleSheet(style)
-        
+
         # 이벤트 연결
         if button_type == 'number':
             if text == '.':
@@ -448,14 +510,14 @@ class MyApp(QWidget):
                 btn.clicked.connect(self.operator_btn_clicked)
         elif button_type == 'function':
             btn.clicked.connect(self.function_btn_clicked)
-        
+
         return btn
 
     def initUI(self):
         """공학용 계산기 UI 초기화"""
         self.setWindowTitle('Engineering Calculator')
         self.setGeometry(100, 100, 700, 552)
-        self.setStyleSheet("background-color: black;")
+        self.setStyleSheet('background-color: black;')
 
         # 디스플레이
         self.display = QLabel('0', self)
@@ -531,6 +593,7 @@ class MyApp(QWidget):
         self.create_button('0', 4, 6, 'number', width=2)
         self.create_button('.', 4, 8, 'number')
         self.create_button('=', 4, 9, 'operator')
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
