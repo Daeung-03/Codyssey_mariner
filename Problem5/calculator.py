@@ -88,37 +88,27 @@ class Calculator:
         return a / b
 
     def change_percent(self, expr):
-        result = ''
+        result = ""
         i = 0
         length = len(expr)
-
+        
         while i < length:
             if expr[i] == '%':
-                # % 다음에 오는 것이 무엇인지 확인
-                if i + 1 < length:
-                    # 공백을 건너뛰고 다음 유효한 문자 찾기
-                    j = i + 1
-                    while j < length and expr[j] == ' ':
-                        j += 1
-
-                    if j < length:
-                        next_char = expr[j]
-                        # 다음 문자가 숫자면 모듈러 연산 (% 그대로 유지)
-                        if next_char.isdigit():
-                            result += '%'
-                        # 다음 문자가 연산자면 백분율 (/100으로 변환)
-                        elif next_char in '+-*/':
-                            result += '/100'
-                        else:
-                            result += '%'  # 기본값
+                if i + 2 < length:
+                    next_char = expr[i + 2]
+                    # % 뒤에 숫자면 모듈러 연산
+                    if next_char.isdigit():
+                        result += '%'
                     else:
-                        result += '/100'  # 마지막에 %가 오면 백분율
+                        # % 뒤에 숫자 아니면 퍼센트 연산
+                        result += '/100'
                 else:
-                    result += '/100'  # 마지막에 %가 오면 백분율
+                    # % 이후 문자가 없으면 퍼센트 연산 
+                    result += '/100'
             else:
                 result += expr[i]
             i += 1
-
+        
         return result
 
     def equal(self):
