@@ -2,6 +2,7 @@ import random
 import threading
 import time
 from datetime import datetime
+from typing import Any
 import mysql.connector
 from mysql.connector import pooling
 import matplotlib.pyplot as plt
@@ -92,9 +93,9 @@ def queue_processor(sensor_queue, db_pool, running):
                     data['humidity']
                 )
         
-        time.sleep(1)  # 1초마다 확인
+        time.sleep(1) 
     
-    print("✓ 큐 프로세서 종료!")
+    print("큐 프로세스 종료됨")
 
 def insert_sensor_data(db_pool, timestamp, temperature, illuminance, humidity):
     conn = None
@@ -148,7 +149,7 @@ def draw_temperature_graph(db_pool):
     data = get_sensor_data(db_pool)
     
     if not data:
-        print("데이터가 없습니다!")
+        print("데이터 없음")
         return
     
     # 시간별로 온도 데이터 그룹화
