@@ -1,7 +1,6 @@
 *.toml
 .venv
 *.txt
-!password.txt
 .DS_Store
 *.WAV
 *.jpg
